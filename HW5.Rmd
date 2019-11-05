@@ -1,0 +1,84 @@
+---
+title: "HW5"
+author: "Xiaomeng Huang"
+date: "11/4/2019"
+output: html_document
+---
+# 5.4
+**a.** 
+Since they sample all articles published during 1988 for the selected journals. This is a one-stage clustering. The clusters are the selected journals, and the observation unit is an article.
+
+**b.**
+```{r,message=FALSE}
+library(SDaA)
+data("journal")
+dat=journal
+dat$indeterminate=dat$numemp-dat$prob-dat$nonprob
+N=1285 #number of clusters/psus in the population
+Mi=dat$numemp # number of observations/ssus in psu i 
+p=sum(journal$nonprob)/sum(journal$numemp)
+
+```
+**c.** The statement is questionable since clsuter sampling often decreases precision.
+
+# 5.8
+
+```{r}
+dat=read.csv("books.csv")
+boxplot(dat$purchase~dat$shelf)
+```
+
+**a.** It appears that both the means and variances are different.
+**b.**
+```{r,message=F,warning=FALSE}
+n=12;N=44
+library(data.table)
+dat=data.table(dat)
+dat$mi=rep(5,nrow(dat))
+tab=dat[,c(lapply(.SD, mean),
+       lapply(.SD, var)),by=c("shelf","Mi","mi"),.SDcols="replace"]
+names(tab)=c("shelf","Mi","mi","ybar","vy")
+tab$t=tab$Mi*tab$ybar
+head(tab)
+tunb=sum(tab$t)*N/n
+tunb # estimate total replacement cost
+se=N*sqrt((1-n/N)*(var(tab$t)/n)+(1/(n*N))*sum((1-(tab$mi/tab$Mi))*(tab$Mi^2)*(tab$vy/tab$mi)))
+se # standard error of estime total replacement cost
+se/tunb #estimated coefficient of variation
+ybar=sum(tab$t)/sum(tab$Mi)
+ybar #estimed average replacement cost per book
+s2=sum((tab$t-(tab$Mi*ybar))^2)/(n-1)
+s2 
+seybar=(1/mean(tab$Mi))*sqrt((1-n/N)*(s2/n)+(1/(n*N))*sum((1-(tab$mi/tab$Mi))*(tab$Mi^2)*(tab$vy/tab$mi)))
+seybar# standard error of estimed average replacement cost per book
+seybar/ybar # estimated coefficient of variation for ybar
+```
+
+# 5.11
+**a.**
+$N=828,n=85,M=215,\bar{y}_U=\frac{1}{nM}\sum{\hat{t}_i}=\frac{4+3+4\times2+22}{85\times 215}=0.002024624$<br>
+$s_t^2=\frac{1}{n-1}\sum(t_i-\bar{t}_S)^2=\frac{1}{84}(57(0-\frac{37}{85})^2+22(1-\frac{37}{85})^2+4(2-\frac{37}{85})^2+(3-\frac{37}{85})^2+(4-\frac{37}{85})^2)=0.5583$,<br>
+$se(\bar{y}_U)=\sqrt{(1-\frac{n}{N})\frac{s_t^2}{nM^2}}=0.000357$<br>
+**b.**
+$t=N\sum{\hat{t}_i}/n=360.42,se(t)=N\sqrt{(1-\frac{n}{N})\frac{s_t^2}{n}}=63.565$<br>
+**c.**
+error rate: $\frac{37}{18275}=0.002025$, estimated variance: $V(p_{srs})=(1-\frac{18275}{178275})\frac{0.002025\times(1-0.002025)}{18274}=9.92\times10^{-8}$<br>
+estimated variance from a: $V(\bar{y})=1.28\times10^{-7}$, which is $1.28\times10^{-7}/9.92\times10^{-8}=1.29$ times larger than the estimated variance using SRS.
+
+
+# 5.19
+```{r}
+data("agsrs")
+mod=anova(lm(acres92~state,data=agsrs))
+R2=1- (mod$`Mean Sq`[2]/(sum(mod$`Sum Sq`)/299))
+R2
+```
+
+**a.** The estimated $R_a^2=0.4953$. There is a cluster effect.
+
+```{r}
+mbar=sqrt(15*(1-R2)/R2)
+mbar
+n=300/4
+n
+```
